@@ -23,7 +23,7 @@
     "zod": "^4.1.11"
   },
   "devDependencies": {
-    "@types/node": "^24.5.2",
+    "@types/node": "^26.6.5",
     "@types/mime-types": "^2.1.4",
     "prisma": "^6.16.2",
     "tsx": "^4.20.6",

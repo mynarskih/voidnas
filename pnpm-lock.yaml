@@ -51,7 +51,7 @@ importers:
         version: 15.1.3
       sharp:
         specifier: 0.35.5
-        version: 0.35.5(@types/node@24.13.6)
+        version: 0.35.5(@types/node@26.6.5)
       zod:
         specifier: ^4.1.11
         version: 4.6.5
@@ -60,8 +60,8 @@ importers:
         specifier: ^2.1.4
         version: 2.1.4
       '@types/node':
-        specifier: ^24.5.2
-        version: 24.13.6
+        specifier: ^26.6.5
+        version: 26.6.5
       prisma:
         specifier: ^6.16.2
         version: 6.19.3(typescript@5.9.3)
@@ -73,7 +73,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@24.13.6)(vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15))
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15))
 
   apps/web:
     dependencies:
@@ -88,7 +88,7 @@ importers:
         version: 2.4.0
       '@vitejs/plugin-react':
         specifier: ^5.0.4
-        version: 5.2.0(vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15))
+        version: 5.2.0(vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15))
       lucide-react:
         specifier: ^0.544.0
         version: 0.544.0(react@19.3.0)
@@ -103,7 +103,7 @@ importers:
         version: 19.3.0(react@19.3.0)
       vite:
         specifier: ^7.1.7
-        version: 7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15)
+        version: 7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15)
     devDependencies:
       '@types/react':
         specifier: ^19.1.16
@@ -119,7 +119,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: 4.1.11
-        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@24.13.6)(vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15))
+        version: 4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15))
 
 packages:
 
@@ -888,8 +888,8 @@ packages:
   '@types/mime-types@2.1.4':
     resolution: {integrity: sha512-lfU4b34HOri+kAY5UheuFMWPDOI+OPceBSHZKp69gEyTL/mmJ4cnU6Y/rlme3UL3GyOn6Y42hyIEw0/q8sWx5w==}
 
-  '@types/node@24.13.6':
-    resolution: {integrity: sha512-SGrw/h3KPFshy3OE6ZL53LMBG5vGQQ8/gIpiqz/kRZhPJ7HgwCEs8LBuNtWLa8dvGZVpSF7+Bf+c11HUrCb/yg==}
+  '@types/node@26.6.5':
+    resolution: {integrity: sha512-uMzsv9stDdofIZBx4UGh4Z9ZgXnGC9seRDscilBcTHAeOFk67MZg/k9bWVfO+bk4qZmG+l52hRnLwUiH2LnJTg==}
 
   '@types/react-dom@19.3.0':
     resolution: {integrity: sha512-ZI7bU42mZXXKHn/qNLEw2IrbiINU7X5+vfgdixBHkCNpYWXjKgfQ/P+uyGb5CjOLB9UcnTeg3rylQtV2hym44Q==}
@@ -1489,8 +1489,8 @@ packages:
     resolution: {integrity: sha512-rvKSBiC5zqCCiDZ9kAOszZcDvdAHwwIKJG33Ykj43OKcWsnmcBRL09YTU4nOeHZ8Y2a7l1MgTd08SBe9A8Qj6A==}
     engines: {node: '>=18'}
 
-  undici-types@7.18.2:
-    resolution: {integrity: sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w==}
+  undici-types@8.9.0:
+    resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
   update-browserslist-db@1.3.3:
     resolution: {integrity: sha512-pJ2sYawQS0R/WI928Gj5GlPhTGzbMelq0+4INtSYNDV9ErKJcX6xjGWkoG/VnB3dpUm00zALaqkrUD77pO5TDQ==}
@@ -2180,9 +2180,9 @@ snapshots:
 
   '@types/mime-types@2.1.4': {}
 
-  '@types/node@24.13.6':
+  '@types/node@26.6.5':
     dependencies:
-      undici-types: 7.18.2
+      undici-types: 8.9.0
 
   '@types/react-dom@19.3.0(@types/react@19.3.0)':
     dependencies:
@@ -2192,7 +2192,7 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
-  '@vitejs/plugin-react@5.2.0(vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15))':
+  '@vitejs/plugin-react@5.2.0(vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15))':
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-transform-react-jsx-self': 7.29.7(@babel/core@7.29.7)
@@ -2200,7 +2200,7 @@ snapshots:
       '@rolldown/pluginutils': 1.0.0-rc.3
       '@types/babel__core': 7.20.5
       react-refresh: 0.18.0
-      vite: 7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15)
+      vite: 7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15)
     transitivePeerDependencies:
       - supports-color
 
@@ -2213,13 +2213,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.1
 
-  '@vitest/mocker@4.1.11(vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15))':
+  '@vitest/mocker@4.1.11(vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15))':
     dependencies:
       '@vitest/spy': 4.1.11
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15)
+      vite: 7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15)
 
   '@vitest/pretty-format@4.1.11':
     dependencies:
@@ -2706,7 +2706,7 @@ snapshots:
 
   set-cookie-parser@2.7.2: {}
 
-  sharp@0.35.5(@types/node@24.13.6):
+  sharp@0.35.5(@types/node@26.6.5):
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
@@ -2737,7 +2737,7 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.5
       '@img/sharp-win32-ia32': 0.35.5
       '@img/sharp-win32-x64': 0.35.5
-      '@types/node': 24.13.6
+      '@types/node': 26.6.5
 
   shebang-command@2.0.0:
     dependencies:
@@ -2803,7 +2803,7 @@ snapshots:
 
   uint8array-extras@1.5.0: {}
 
-  undici-types@7.18.2: {}
+  undici-types@8.9.0: {}
 
   update-browserslist-db@1.3.3(browserslist@4.29.1):
     dependencies:
@@ -2811,7 +2811,7 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15):
+  vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15):
     dependencies:
       esbuild: 0.28.2
       fdir: 6.5.0(picomatch@4.0.7)
@@ -2820,15 +2820,15 @@ snapshots:
       rollup: 4.63.5
       tinyglobby: 0.2.17
     optionalDependencies:
-      '@types/node': 24.13.6
+      '@types/node': 26.6.5
       fsevents: 2.3.3
       jiti: 2.7.0
       tsx: 4.23.15
 
-  vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@24.13.6)(vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15)):
+  vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@26.6.5)(vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15)):
     dependencies:
       '@vitest/expect': 4.1.11
-      '@vitest/mocker': 4.1.11(vite@7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15))
+      '@vitest/mocker': 4.1.11(vite@7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15))
       '@vitest/pretty-format': 4.1.11
       '@vitest/runner': 4.1.11
       '@vitest/snapshot': 4.1.11
@@ -2845,11 +2845,11 @@ snapshots:
       tinyexec: 1.3.1
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.1
-      vite: 7.3.6(@types/node@24.13.6)(jiti@2.7.0)(tsx@4.23.15)
+      vite: 7.3.6(@types/node@26.6.5)(jiti@2.7.0)(tsx@4.23.15)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.1
-      '@types/node': 24.13.6
+      '@types/node': 26.6.5
     transitivePeerDependencies:
       - msw
 
