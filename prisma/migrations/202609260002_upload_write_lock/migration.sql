@@ -1,0 +1,1 @@
+ALTER TABLE "UploadSession" ADD COLUMN "writing" BOOLEAN NOT NULL DEFAULT false;

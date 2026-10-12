@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum UploadStatus {
+  ACTIVE
+  COMPLETE
+  FAILED
+  CANCELLED
+}
+
+enum SharePermission {
+  READ
+  READ_WRITE
+}
+
+model User {
+  id             String               @id @default(uuid()) @db.Uuid
+  username       String               @unique @db.VarChar(64)
+  passwordHash   String
+  role           Role                 @default(USER)
+  quotaBytes     BigInt?
+  usedBytes      BigInt               @default(0)
+  enabled        Boolean              @default(true)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  lastLogin      DateTime?
+  language       String               @default("en") @db.VarChar(8)
+  timeZone       String               @default("Europe/Warsaw") @db.VarChar(100)
+  theme          String               @default("dark") @db.VarChar(8)
+  sessions       Session[]
+  files          FileEntry[]
+  uploads        UploadSession[]
+  reservations   StorageReservation[]
+  sharesCreated  Share[]              @relation("ShareOwner")
+  sharesReceived Share[]              @relation("ShareRecipient")
+  auditLogs      AuditLog[]
+  publicLinks    PublicLink[]
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  tokenHash String   @unique
+  csrfHash  String
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  lastSeenAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+}
+
+model FileEntry {
+  id          String      @id @default(uuid()) @db.Uuid
+  ownerId     String      @db.Uuid
+  parentId    String?     @db.Uuid
+  name        String      @db.VarChar(255)
+  storagePath String      @unique
+  size        BigInt      @default(0)
+  mimeType    String?
+  isDirectory Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+  owner       User        @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  parent      FileEntry?  @relation("FileTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children    FileEntry[] @relation("FileTree")
+  shares      Share[]
+  publicLinks PublicLink[]
+  @@index([ownerId, parentId, deletedAt, name])
+}
+
+model Share {
+  id          String          @id @default(uuid()) @db.Uuid
+  fileId      String          @db.Uuid
+  ownerId     String          @db.Uuid
+  recipientId String          @db.Uuid
+  permission  SharePermission @default(READ)
+  createdAt   DateTime        @default(now())
+  file        FileEntry       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  owner       User            @relation("ShareOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  recipient   User            @relation("ShareRecipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  @@unique([fileId, recipientId])
+  @@index([recipientId, createdAt])
+}
+
+model UploadSession {
+  id             String               @id @default(uuid()) @db.Uuid
+  userId         String               @db.Uuid
+  initiatedById  String?              @db.Uuid
+  parentId       String?              @db.Uuid
+  fileName       String               @db.VarChar(255)
+  expectedSize   BigInt
+  receivedBytes  BigInt               @default(0)
+  writing        Boolean              @default(false)
+  mimeType       String?
+  sha256         String?              @db.VarChar(64)
+  status         UploadStatus         @default(ACTIVE)
+  temporaryPath  String               @unique
+  createdAt      DateTime             @default(now())
+  expiresAt      DateTime
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reservation    StorageReservation?
+  @@index([userId, status, expiresAt])
+}
+
+model StorageReservation {
+  id              String        @id @default(uuid()) @db.Uuid
+  userId          String        @db.Uuid
+  bytes           BigInt
+  uploadSessionId String        @unique @db.Uuid
+  expiresAt       DateTime
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploadSession   UploadSession @relation(fields: [uploadSessionId], references: [id], onDelete: Cascade)
+  @@index([userId, expiresAt])
+}
+
+model AuditLog {
+  id         BigInt   @id @default(autoincrement())
+  userId     String?  @db.Uuid
+  action     String   @db.VarChar(64)
+  ip         String?
+  resourceId String?
+  result     String   @db.VarChar(32)
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  @@index([createdAt])
+  @@index([userId, createdAt])
+}
+
+model SystemSetting {
+  key       String   @id @db.VarChar(128)
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model SetupLock {
+  id        Int      @id @default(1)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PublicLink {
+  id           String   @id @default(uuid()) @db.Uuid
+  ownerId      String   @db.Uuid
+  fileId       String   @db.Uuid
+  tokenHash    String   @unique
+  passwordHash String?
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  owner        User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  file         FileEntry @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  grants       PublicLinkGrant[]
+  @@index([ownerId, createdAt])
+}
+
+model PublicLinkGrant {
+  id        String   @id @default(uuid()) @db.Uuid
+  linkId    String   @db.Uuid
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  link      PublicLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  @@index([linkId, expiresAt])
+}
+
+model AdminAlert {
+  id             String   @id @default(uuid()) @db.Uuid
+  key            String   @unique @db.VarChar(128)
+  code           String   @db.VarChar(64)
+  severity       String   @db.VarChar(16)
+  message        String   @db.VarChar(512)
+  active         Boolean  @default(true)
+  acknowledgedAt DateTime?
+  resolvedAt     DateTime?
+  firstSeenAt    DateTime @default(now())
+  lastSeenAt     DateTime @default(now())
+  @@index([active, lastSeenAt])
+}

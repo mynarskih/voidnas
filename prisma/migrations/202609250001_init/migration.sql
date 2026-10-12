@@ -1,0 +1,18 @@
+CREATE TYPE "Role" AS ENUM ('ADMIN', 'USER');
+CREATE TYPE "UploadStatus" AS ENUM ('ACTIVE', 'COMPLETE', 'FAILED', 'CANCELLED');
+CREATE TYPE "SharePermission" AS ENUM ('READ', 'READ_WRITE');
+CREATE TABLE "User" ("id" UUID PRIMARY KEY, "username" VARCHAR(64) NOT NULL UNIQUE, "passwordHash" TEXT NOT NULL, "role" "Role" NOT NULL DEFAULT 'USER', "quotaBytes" BIGINT, "usedBytes" BIGINT NOT NULL DEFAULT 0, "enabled" BOOLEAN NOT NULL DEFAULT true, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, "lastLogin" TIMESTAMP(3));
+CREATE TABLE "Session" ("id" UUID PRIMARY KEY, "userId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE, "tokenHash" TEXT NOT NULL UNIQUE, "csrfHash" TEXT NOT NULL, "ip" TEXT, "userAgent" TEXT, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "expiresAt" TIMESTAMP(3) NOT NULL, "revokedAt" TIMESTAMP(3));
+CREATE TABLE "FileEntry" ("id" UUID PRIMARY KEY, "ownerId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE, "parentId" UUID REFERENCES "FileEntry"("id") ON DELETE RESTRICT, "name" VARCHAR(255) NOT NULL, "storagePath" TEXT NOT NULL UNIQUE, "size" BIGINT NOT NULL DEFAULT 0, "mimeType" TEXT, "isDirectory" BOOLEAN NOT NULL DEFAULT false, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" TIMESTAMP(3) NOT NULL, "deletedAt" TIMESTAMP(3));
+CREATE UNIQUE INDEX "FileEntry_ownerId_parentId_name_key" ON "FileEntry"("ownerId","parentId","name");
+CREATE INDEX "FileEntry_ownerId_parentId_deletedAt_name_idx" ON "FileEntry"("ownerId","parentId","deletedAt","name");
+CREATE TABLE "Share" ("id" UUID PRIMARY KEY, "fileId" UUID NOT NULL REFERENCES "FileEntry"("id") ON DELETE CASCADE, "ownerId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE, "recipientId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE, "permission" "SharePermission" NOT NULL DEFAULT 'READ', "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE("fileId","recipientId"));
+CREATE TABLE "UploadSession" ("id" UUID PRIMARY KEY, "userId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE, "parentId" UUID, "fileName" VARCHAR(255) NOT NULL, "expectedSize" BIGINT NOT NULL, "receivedBytes" BIGINT NOT NULL DEFAULT 0, "mimeType" TEXT, "status" "UploadStatus" NOT NULL DEFAULT 'ACTIVE', "temporaryPath" TEXT NOT NULL UNIQUE, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "expiresAt" TIMESTAMP(3) NOT NULL);
+CREATE TABLE "StorageReservation" ("id" UUID PRIMARY KEY, "userId" UUID NOT NULL REFERENCES "User"("id") ON DELETE CASCADE, "bytes" BIGINT NOT NULL, "uploadSessionId" UUID NOT NULL UNIQUE REFERENCES "UploadSession"("id") ON DELETE CASCADE, "expiresAt" TIMESTAMP(3) NOT NULL);
+CREATE TABLE "AuditLog" ("id" BIGSERIAL PRIMARY KEY, "userId" UUID REFERENCES "User"("id") ON DELETE SET NULL, "action" VARCHAR(64) NOT NULL, "ip" TEXT, "resourceId" TEXT, "result" VARCHAR(32) NOT NULL, "metadata" JSONB, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE "SystemSetting" ("key" VARCHAR(128) PRIMARY KEY, "value" JSONB NOT NULL, "updatedAt" TIMESTAMP(3) NOT NULL);
+CREATE TABLE "SetupLock" ("id" INTEGER PRIMARY KEY DEFAULT 1, "completed" BOOLEAN NOT NULL DEFAULT false, "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX "Session_userId_expiresAt_idx" ON "Session"("userId","expiresAt");
+CREATE INDEX "UploadSession_userId_status_expiresAt_idx" ON "UploadSession"("userId","status","expiresAt");
+CREATE INDEX "StorageReservation_userId_expiresAt_idx" ON "StorageReservation"("userId","expiresAt");
+CREATE INDEX "AuditLog_createdAt_idx" ON "AuditLog"("createdAt");

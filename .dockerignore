@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+**/dist
+storage
+backups
+.env
+.git
+*.zip
+
+.git
+.github
+secrets
+private
+backups
+*.log
+.env
+.env.*

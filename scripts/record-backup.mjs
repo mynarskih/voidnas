@@ -1,0 +1,16 @@
+import {lstat,mkdir,readFile,rename,writeFile} from 'node:fs/promises';
+import {resolve} from 'node:path';
+import {randomUUID} from 'node:crypto';
+const root=process.argv[2],status=process.argv[3];
+if(!root||!['success','failed'].includes(status))throw new Error('Usage: record-backup.mjs STORAGE_ROOT success|failed');
+const directory=resolve(root,'.operations');
+const info=await lstat(directory).catch(error=>{if(error.code==='ENOENT')return null;throw error});
+if(info&&(!info.isDirectory()||info.isSymbolicLink()))throw new Error('Unsafe operations directory');
+await mkdir(directory,{recursive:true,mode:0o750});
+const file=resolve(directory,'backup-status.json');
+const existing=await lstat(file).catch(error=>{if(error.code==='ENOENT')return null;throw error});
+if(existing?.isSymbolicLink())throw new Error('Unsafe backup status path');
+const previous=existing?await readFile(file,'utf8').then(JSON.parse).catch(()=>null):null;
+const lastAttemptAt=new Date().toISOString(),temporary=resolve(directory,`backup-status-${randomUUID()}.tmp`);
+await writeFile(temporary,JSON.stringify({status,lastAttemptAt,lastSuccessAt:status==='success'?lastAttemptAt:previous?.lastSuccessAt??null}),{flag:'wx',mode:0o640});
+await rename(temporary,file);

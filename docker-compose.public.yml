@@ -1,0 +1,15 @@
+# Apply after the local override. The existing home HTTPS gateway is the only
+# public listener and joins voidnas_public; DB stays on the internal network.
+services:
+  api:
+    environment:
+      COOKIE_SECURE: "true"
+      NODE_ENV: production
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+  caddy:
+    volumes:
+      - ./infra/caddy/Caddyfile.public-local:/etc/caddy/Caddyfile:ro

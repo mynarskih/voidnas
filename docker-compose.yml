@@ -1,0 +1,78 @@
+name: voidnas
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    env_file: .env
+    ports: ["80:80", "443:443", "443:443/udp"]
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [public]
+    depends_on:
+      api: { condition: service_healthy }
+      web: { condition: service_started }
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+    networks: [public]
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ${STORAGE_HOST_PATH:-./storage}:/srv/nas/storage
+    networks: [public, internal]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    stop_grace_period: 30s
+  migrate:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file: .env
+    command: ["./node_modules/.bin/prisma", "migrate", "deploy", "--schema", "/app/prisma/schema.prisma"]
+    networks: [internal]
+    depends_on:
+      postgres: { condition: service_healthy }
+    restart: "no"
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file: .env
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 8
+  system-metrics:
+    image: prom/node-exporter:v1.9.1
+    profiles: ["linux-host-metrics"]
+    restart: unless-stopped
+    command: ["--path.rootfs=/host", "--collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+)($$|/)"]
+    volumes: ["/:/host:ro,rslave"]
+    networks: [internal]
+    read_only: true
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+networks:
+  public: {}
+  internal: { internal: true }
+volumes:
+  postgres_data: {}
+  caddy_data: {}
+  caddy_config: {}

@@ -1,0 +1,1 @@
+ALTER TABLE "UploadSession" ADD COLUMN "sha256" VARCHAR(64);
