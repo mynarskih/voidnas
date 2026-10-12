@@ -1,0 +1,54 @@
+name: Kontrole
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Gitleaks lokalny skan historii i ĹşrĂłdeĹ‚
+        shell: bash
+        run: |
+          set -euo pipefail
+          tool="$RUNNER_TEMP/gitleaks"
+          mkdir -p "$tool"
+          cd "$tool"
+          curl --fail --location --retry 3 -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          curl --fail --location --retry 3 -o checksums.txt https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_checksums.txt
+          hash=$(awk '$2 == "gitleaks_8.30.1_linux_x64.tar.gz" {print $1}' checksums.txt)
+          test -n "$hash"
+          echo "$hash  gitleaks.tar.gz" | sha256sum --check -
+          tar -xzf gitleaks.tar.gz gitleaks
+          printf '[extend]\nuseDefault = true\n' > "$tool/default.toml"
+          "$tool/gitleaks" git "$GITHUB_WORKSPACE" --log-opts=--all --config "$tool/default.toml" --gitleaks-ignore-path "$tool/absent-ignore" --ignore-gitleaks-allow --redact=100 --no-banner
+          "$tool/gitleaks" dir "$GITHUB_WORKSPACE" --config "$tool/default.toml" --gitleaks-ignore-path "$tool/absent-ignore" --ignore-gitleaks-allow --redact=100 --no-banner
+  checks:
+    needs: secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NODE_ENV: test
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+      - run: npm install --global pnpm@11.19.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level=high
+      - run: pnpm test
+      - run: pnpm exec prisma generate
+      - run: pnpm build
